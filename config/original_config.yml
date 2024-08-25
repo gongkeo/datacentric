@@ -1,0 +1,31 @@
+data:
+  data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/train/sampled
+  splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold_sampled_data.json
+  fold: all
+  target_shape: [ 128, 160, 112 ]
+  batch_size: 2
+  suffix: .nii.gz
+  num_workers_train: 3
+  num_workers_val: 3
+
+logger:
+  experiment: lightning_logs
+  name: original
+
+model:
+  pretrained: false
+  resume: false
+  ckpt_path:
+  lr: 0.001
+  sw_batch_size: 4
+  seed: 42
+
+trainer:
+  max_steps: 5000
+  check_val_every_n_epoch: 2
+  precision: bf16-mixed #32, 16
+  accelerator: gpu
+  devices: 1
+  deterministic: true
+  strategy: auto
+  sync_batchnorm: true #false
