@@ -20,6 +20,7 @@ class ResampleDataset(Dataset):
         samples_per_file: int = 15,
         seed: int = 42,
         resume: bool = False,
+        outlier_detection_fn = None
     ) -> None:
         """Initialize the class with the provided parameters.
         Args:
@@ -123,9 +124,9 @@ class OutlierModel:
 
 
 if __name__ == "__main__":
-    root = "/data_dir/Autopet"
-    dest = "/data_dir/preprocessed/train"
-    worker = 96
+    root = "G:/joohyun/research/AutoPET Challenge 2024/data/train/sampled"
+    dest = "G:/joohyun/research/AutoPET Challenge 2024/preprocessed/train"
+    worker = 3
     samples_per_file = 50
     seed = 42
     
