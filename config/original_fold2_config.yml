@@ -1,6 +1,6 @@
 data:
   data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/train/sampled
-  splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold_sampled_data.json
+  splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold2_sampled_data.json
   fold: all
   target_shape: [ 128, 160, 112 ]
   batch_size: 2
@@ -10,7 +10,7 @@ data:
 
 logger:
   experiment: lightning_logs
-  name: original_01
+  name: original_fold2
 
 model:
   pretrained: false
