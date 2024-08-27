@@ -10,12 +10,12 @@ data:
 
 logger:
   experiment: lightning_logs
-  name: original_fold2
+  name: original_fold2_transfer
 
 model:
   pretrained: true
   resume: true
-  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/original_fold2/version_0/checkpoints/epoch=47-step=2400.ckpt
+  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/baseline/version_0/checkpoints/last.ckpt
   lr: 0.001
   sw_batch_size: 4
   seed: 42
