@@ -15,13 +15,13 @@ logger:
 model:
   pretrained: true
   resume: true
-  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/baseline/version_0/checkpoints/last.ckpt
+  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/baseline/version_0/checkpoints/epoch=581_fold0.ckpt
   lr: 0.001
   sw_batch_size: 4
   seed: 42
 
 trainer:
-  max_steps: 5000
+  max_steps: 0
   check_val_every_n_epoch: 2
   precision: bf16-mixed #32, 16
   accelerator: gpu

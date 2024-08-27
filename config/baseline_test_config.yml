@@ -10,12 +10,12 @@ data:
 
 logger:
   experiment: lightning_logs
-  name: test_fold2_sampled
+  name: baseline_test
 
 model:
   pretrained: true
   resume: false
-  ckpt_path: G:/joohyun/research/AutoPET Challenge 2024/lightning_logs/original_fold2/version_1/checkpoints/epoch=87-step=4400.ckpt
+  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/baseline/version_0/checkpoints/last.ckpt
   lr: 0.001
   sw_batch_size: 4
   seed: 42

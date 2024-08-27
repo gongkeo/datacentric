@@ -1,8 +1,4 @@
 import os
-import sys
-sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-
-# import os
 from multiprocessing import Lock
 
 import monai
@@ -26,6 +22,7 @@ class ResampleDataset(Dataset):
         samples_per_file: int = 15,
         seed: int = 42,
         resume: bool = False,
+        outlier_detection_fn = None # 추가
     ) -> None:
         """Initialize the class with the provided parameters.
         Args:
@@ -40,10 +37,10 @@ class ResampleDataset(Dataset):
         monai.utils.set_determinism(seed=seed)
         np.random.seed(seed)
 
-        split_data = read_split(split_dir, fold)
+        split_data = read_split(os.path.join(data_dir, "splits_final.json"), 0)
         train_val_data = split_data["train"] + split_data["val"]
 
-        # self.files = get_file_dict_nn(data_dir, train_val_data, suffix=".nii.gz")
+        self.files = get_file_dict_nn(data_dir, train_val_data, suffix=".nii.gz")
         self.transform = transform
         self.destination = save_path
         self.root = data_dir
@@ -63,9 +60,15 @@ class ResampleDataset(Dataset):
         file_path = self.files[idx]
         for i in range(self.samples_per_file):
             image, label = self.transform(file_path)
+
+            #### outlier_model ####
+            if self.outlier_detection_fn is not None:
+                if self.outlier_detection_fn(image):
+                    # print(f"File {file_path} skipped due to outlier detection.")
+                    continue
+            
             label_name = str(file_path["label"]).replace(".nii.gz", "").split("/")[-1]
-            label_base = os.path.basename(label_name) # 추가
-            output_path = os.path.join(self.destination, f"{label_base}_{i:03d}.npz") # 수정
+            output_path = os.path.join(self.destination, f"{label_name}_{i:03d}.npz")
             os.makedirs(os.path.dirname(output_path), exist_ok=True)
             with self.lock:
                 np.savez_compressed(output_path, input=image.numpy(), label=label.numpy())
@@ -107,6 +110,21 @@ def test_integrity(dir_path):
             print(filename)
 
 
+#### OutlierModel class ####
+class OutlierModel:
+    def __init__(self, model_path, threshold=0.5):
+        self.model = torch.load(model_path)
+        self.model.eval()
+        self.threshold = threshold
+
+    def detect(self, image):
+        with torch.no_grad():
+            outlier_prob = self.model(image.unsqueeze(0))
+            if outlier_prob.item() > self.threshold:
+                return True
+        return False
+
+
 if __name__ == "__main__":
     challenge_root_path = "G:\\joohyun\\research\\AutoPET Challenge 2024"
     data_path = os.path.join(challenge_root_path, "data")
@@ -129,9 +147,13 @@ if __name__ == "__main__":
     worker = 0
     samples_per_file = 50
     seed = 42
+    
+    #### outlier_model ####
+    outlier_model = OutlierModel(model_path="/path/to/pretrained/model.pth", threshold=0.7)
 
     transform = get_transforms("train", target_shape=(128, 160, 112), resample=True)
-    ds = ResampleDataset(root, split, dest, transform, fold=0, samples_per_file=samples_per_file, seed=seed, resume=False)
+    ds = ResampleDataset(root, split, dest, transform, samples_per_file=samples_per_file, seed=seed, resume=False,
+                        outlier_detection_fn=outlier_model.detect)
 
     dataloader = DataLoader(ds, batch_size=1, shuffle=False, num_workers=worker)
     for _ in tqdm(dataloader, total=len(dataloader)):
