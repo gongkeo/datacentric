@@ -1,7 +1,7 @@
 data:
   data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/train/sampled
-  splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold2_sampled_data.json
-  fold: all
+  splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/test_sampled_data.json
+  fold: 0
   target_shape: [ 128, 160, 112 ]
   batch_size: 2
   suffix: .nii.gz
@@ -10,19 +10,19 @@ data:
 
 logger:
   experiment: lightning_logs
-  name: original_fold2
+  name: original_fold2_test
 
 model:
   pretrained: true
-  resume: true
-  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/original_fold2/version_0/checkpoints/epoch=47-step=2400.ckpt
+  resume: false
+  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/original_fold2/version_1/checkpoints/epoch=87-step=4400.ckpt
   lr: 0.001
   sw_batch_size: 4
   seed: 42
 
 trainer:
   max_steps: 5000
-  check_val_every_n_epoch: 2
+  check_val_every_n_epoch: 1
   precision: bf16-mixed #32, 16
   accelerator: gpu
   devices: 1
