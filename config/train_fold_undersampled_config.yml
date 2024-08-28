@@ -11,7 +11,7 @@ data:
 
 logger:
   experiment: lightning_logs
-  name: train_fold_sampled
+  name: train_fold_undersampled
 
 model:
   pretrained: false

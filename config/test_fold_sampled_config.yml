@@ -1,5 +1,5 @@
 data:
-  data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/test/sampled
+  data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/test
   splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/test_fold_sampled_data.json
   fold: 0
   target_shape: [ 128, 160, 112 ]
@@ -15,7 +15,7 @@ logger:
 model:
   pretrained: true
   resume: false
-  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/train_fold_sampled/version_0/checkpoints/epoch=100-step=5000.ckpt
+  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/train_fold_sampled/version_0/checkpoints/last.ckpt
   lr: 0.001
   sw_batch_size: 4
   seed: 42
