@@ -122,7 +122,7 @@ if __name__ == "__main__":
     json_path = os.path.join(challenge_root_path, "json")
     train_fold_sampled_json_path = os.path.join(json_path, "train_fold_sampled_data.json")
     
-    root = data_train_sampled_path
+    root = data_train_path
     split = train_fold_sampled_json_path
     dest = ppc_train_sampled_path
     fold = 0
