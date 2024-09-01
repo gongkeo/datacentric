@@ -1,0 +1,31 @@
+data:
+  data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/test
+  splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/test_fold_sampled_data.json
+  fold: 0
+  target_shape: [ 128, 160, 112 ]
+  batch_size: 2
+  suffix: .nii.gz
+  num_workers_train: 3
+  num_workers_val: 3
+
+logger:
+  experiment: lightning_logs
+  name: test_fold_undersampled_onehalf
+
+model:
+  pretrained: true
+  resume: false
+  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/train_fold_undersampled_onehalf/version_0/checkpoints/last.ckpt
+  lr: 0.001
+  sw_batch_size: 4
+  seed: 42
+
+trainer:
+  max_steps: 5000
+  check_val_every_n_epoch: 1
+  precision: bf16-mixed #32, 16
+  accelerator: gpu
+  devices: 1
+  deterministic: true
+  strategy: auto
+  sync_batchnorm: true #false
