@@ -13,15 +13,15 @@ logger:
   name: train_fold_sampled_psma
 
 model:
-  pretrained: false
-  resume: false
-  ckpt_path:
+  pretrained: true
+  resume: true
+  ckpt_path: G:/joohyun/Github/datacentric/lightning_logs/train_fold_sampled_fdg/version_0/checkpoints/last.ckpt
   lr: 0.001
   sw_batch_size: 4
   seed: 42
 
 trainer:
-  max_steps: 2874
+  max_steps: 7500
   check_val_every_n_epoch: 2
   precision: bf16-mixed #32, 16
   accelerator: gpu
@@ -29,3 +29,4 @@ trainer:
   deterministic: true
   strategy: auto
   sync_batchnorm: true #false
+  log_every_n_steps: 10
