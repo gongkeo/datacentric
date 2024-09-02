@@ -119,14 +119,16 @@ if __name__ == "__main__":
     ppc_train_path = os.path.join(ppc_path, "train")
     ppc_train_sampled_path = os.path.join(ppc_train_path, "sampled")
     ppc_train_randomsampled_path = os.path.join(ppc_train_path, "randomsampled")
+    ppc_train_final_path = os.path.join(ppc_train_path, "final")
     json_path = os.path.join(challenge_root_path, "json")
     train_fold_sampled_json_path = os.path.join(json_path, "train_fold_sampled_data.json")
+    train_fold_final_path = os.path.join(json_path, "train_fold_final_data.json")
     
     root = data_train_path
-    split = train_fold_sampled_json_path
-    dest = ppc_train_sampled_path
+    split = train_fold_final_path
+    dest = ppc_train_final_path
     fold = 0
-    worker = 0
+    worker = 3
     samples_per_file = 50
     seed = 42
 
