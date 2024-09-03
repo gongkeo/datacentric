@@ -123,7 +123,7 @@ if __name__ == "__main__":
     split = train_fold_final_path
     dest = preprocessed_path
     fold = 0
-    worker = 4
+    worker = 3
     samples_per_file = 20
     seed = 42
 
