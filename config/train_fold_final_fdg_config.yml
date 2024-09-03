@@ -1,7 +1,7 @@
 data:
   # data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/train
   data_dir_preprocessed: G:/joohyun/research/AutoPET Challenge 2024/preprocessed/train/final
-  splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold_final_data.json
+  splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold_final_fdg_data.json
   fold: 0
   target_shape: [ 128, 160, 112 ]
   batch_size: 2
@@ -11,7 +11,7 @@ data:
 
 logger:
   experiment: lightning_logs
-  name: train_fold_final
+  name: train_fold_final_fdg
 
 model:
   pretrained: false
@@ -22,7 +22,7 @@ model:
   seed: 42
 
 trainer:
-  max_epoch: 750
+  max_epoch: 500
   # max_steps: 250000
   check_val_every_n_epoch: 5
   precision: bf16-mixed #32, 16
@@ -31,3 +31,4 @@ trainer:
   deterministic: true
   strategy: auto
   sync_batchnorm: true #false
+  log_every_n_steps: 10
