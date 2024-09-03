@@ -128,7 +128,7 @@ if __name__ == "__main__":
     split = train_fold_final_path
     dest = ppc_train_final_path
     fold = 0
-    worker = 3
+    worker = 4
     samples_per_file = 50
     seed = 42
 
