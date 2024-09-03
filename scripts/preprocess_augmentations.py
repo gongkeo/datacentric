@@ -114,22 +114,17 @@ if __name__ == "__main__":
     data_train_path = os.path.join(data_path, "train")
     data_train_sampled_path = os.path.join(data_train_path, "sampled")
     data_train_randomsampled_path = os.path.join(data_train_path, "randomsampled")
-    ppc_path = os.path.join(challenge_root_path, "preprocessed")
-    ppc_test_path = os.path.join(ppc_path, "test")
-    ppc_train_path = os.path.join(ppc_path, "train")
-    ppc_train_sampled_path = os.path.join(ppc_train_path, "sampled")
-    ppc_train_randomsampled_path = os.path.join(ppc_train_path, "randomsampled")
-    ppc_train_final_path = os.path.join(ppc_train_path, "final")
+    preprocessed_path = os.path.join(challenge_root_path, "preprocessed")
     json_path = os.path.join(challenge_root_path, "json")
     train_fold_sampled_json_path = os.path.join(json_path, "train_fold_sampled_data.json")
     train_fold_final_path = os.path.join(json_path, "train_fold_final_data.json")
     
     root = data_train_path
     split = train_fold_final_path
-    dest = ppc_train_final_path
+    dest = preprocessed_path
     fold = 0
-    worker = 4
-    samples_per_file = 50
+    worker = 3
+    samples_per_file = 20
     seed = 42
 
     transform = get_transforms("train", target_shape=(128, 160, 112), resample=True)
