@@ -1,9 +1,10 @@
 data:
-  data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/train
+  data_dir: G:/joohyun/research/AutoPET Challenge 2024/resize
   # data_dir_preprocessed: G:/joohyun/research/AutoPET Challenge 2024/preprocessed
   splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold_final_data.json
   fold: 0
-  target_shape: [ 128, 160, 112 ]
+  # target_shape: [ 128, 160, 112 ]
+  target_shape: [ 96, 120, 84 ]
   batch_size: 2
   suffix: .nii.gz
   num_workers_train: 3
@@ -11,13 +12,13 @@ data:
 
 logger:
   experiment: lightning_logs
-  name: train_fold_final
+  name: train_fold_resize_final
 
 model:
   pretrained: false
   resume: false
   ckpt_path:
-  lr: 0.0001
+  lr: 0.001
   sw_batch_size: 4
   seed: 42
 

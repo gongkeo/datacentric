@@ -1,11 +1,11 @@
 data:
   data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/train
-  # data_dir_preprocessed: G:/joohyun/research/AutoPET Challenge 2024/preprocessed
+  data_dir_preprocessed: G:/joohyun/research/AutoPET Challenge 2024/preprocessed_split
   splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold_final_fdg_data.json
   fold: 0
   target_shape: [ 128, 160, 112 ]
   batch_size: 2
-  suffix: .nii.gz
+  suffix: .npz
   num_workers_train: 3
   num_workers_val: 3
 
