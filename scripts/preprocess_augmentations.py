@@ -124,7 +124,7 @@ if __name__ == "__main__":
     dest = preprocessed_path
     fold = 0
     worker = 3
-    samples_per_file = 20
+    samples_per_file = 10
     seed = 42
 
     transform = get_transforms("train", target_shape=(128, 160, 112), resample=True)

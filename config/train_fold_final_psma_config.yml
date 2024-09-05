@@ -1,6 +1,6 @@
 data:
-  # data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/train
-  data_dir_preprocessed: G:/joohyun/research/AutoPET Challenge 2024/preprocessed/train/final
+  data_dir: G:/joohyun/research/AutoPET Challenge 2024/data/train
+  # data_dir_preprocessed: G:/joohyun/research/AutoPET Challenge 2024/preprocessed
   splits_file: G:/joohyun/research/AutoPET Challenge 2024/json/train_fold_final_psma_data.json
   fold: 0
   target_shape: [ 128, 160, 112 ]
@@ -22,8 +22,8 @@ model:
   seed: 42
 
 trainer:
-  max_epoch: 250
-  # max_steps: 250000
+  max_epochs: 250
+  # max_steps: 100000
   check_val_every_n_epoch: 5
   precision: bf16-mixed #32, 16
   accelerator: gpu
