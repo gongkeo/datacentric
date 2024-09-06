@@ -1,104 +1,175 @@
+import json
 import os
-import shutil
-from typing import Union
+from pathlib import Path
+from typing import List
 
-import matplotlib.pylab as plt
 import numpy as np
-import torch
-from pytorch_lightning.callbacks import Callback
-
-from autopet3.fixed.evaluation import AutoPETMetricAggregator
 
 
-class SaveFileToLoggerDirCallback(Callback):
-    def __init__(self, config_file: str):
-        """Save the provided config file to the log directory.
-        Args:
-            config_file (str): Path to the configuration file.
-
-        """
-        super().__init__()
-        self.config_file = config_file
-
-    def on_train_start(self, trainer, pl_module):
-        try:
-            save_dir = trainer.logger.log_dir
-            file_path = os.path.join(save_dir, self.config_file.split("/")[-1])
-            shutil.copy(self.config_file, file_path)
-        except Exception as e:
-            print(f"Failed to copy config file: {e}")
+def get_patients(path_list: List[str]) -> List[str]:
+    # extract the patient ID from the path
+    return [path.split("_")[1] for path in path_list]
 
 
-def plot_ct_pet_label(
-    ct: Union[np.ndarray, torch.Tensor],
-    pet: Union[np.ndarray, torch.Tensor],
-    label: Union[np.ndarray, torch.Tensor],
-    axis: int = 1,
-) -> None:
-    """Plot the sum of the label, CT, and PET images along the second dimension.
+def read_split(splits_file: str, fold: int = 0) -> dict:
+    """Read a specific fold from a JSON file containing splits.
     Args:
-        ct (Union[np.ndarray, torch.Tensor]): The CT image.
-        pet (Union[np.ndarray, torch.Tensor]): The PET image.
-        label (Union[np.ndarray, torch.Tensor]): The label image.
-        axis (int): The axis along which the sum will be computed.
+        splits_file (str): The path to the JSON file containing the splits.
+        fold (int): The fold number to read from the splits file. Defaults to 0.
+    Returns:
+        dict: The dictionary representing the split for the specified fold.
 
     """
-    ct = ct.detach().cpu().numpy() if isinstance(ct, torch.Tensor) else ct
-    pet = pet.detach().cpu().numpy() if isinstance(pet, torch.Tensor) else pet
-    label = label.detach().cpu().numpy() if isinstance(label, torch.Tensor) else label
-
-    data = {"ct": ct, "pet": pet, "label": label}
-    fig, axes = plt.subplots(1, 3, figsize=(12, 6))
-
-    # Plot the sum of the CT image along the second dimension
-    axes[0].imshow(np.rot90(data["ct"].squeeze().sum(axis)), cmap="gray")
-    axes[0].set_title("Sum of CT Image")
-
-    # Plot the sum of the CT image along the second dimension
-    axes[1].imshow(np.rot90(np.amax(data["pet"].squeeze(), axis)), cmap="gray")
-    axes[1].set_title("Amax of PET Image")
-
-    # Plot the sum of the label image along the second dimension
-    axes[2].imshow(np.rot90(data["label"].squeeze().sum(axis)), cmap="gray")
-    axes[2].set_title("Sum of Label Image")
-    plt.show()
+    with open(splits_file) as json_file:
+        splits_dict = json.load(json_file)[fold]
+    return splits_dict
 
 
-def plot_results(
-    prediction: Union[np.ndarray, torch.Tensor],
-    label: Union[np.ndarray, torch.Tensor],
-    axis: int = 1,
-    print_metrics: bool = False,
-) -> None:
-    """Plot the results of a prediction compared to the ground truth label.
+def get_file_dict_nn(root: str, split: List[str], suffix: str = ".nii.gz") -> List[dict]:
+    """Generate a dictionary containing paths to CT, PET, and label files for each element in the split list.
     Args:
-        prediction (Union[np.ndarray, torch.Tensor]): The predicted values.
-        label (Union[np.ndarray, torch.Tensor]): The ground truth values.
-        axis (int): The axis along which the sum will be computed.
-        print_metrics (bool): Whether to print the metrics.
+        root (str): The root directory path.
+        split (List[str]): List of elements to generate paths for.
+        suffix (str): Suffix for the file extensions. Default is ".nii.gz".
+    Returns:
+        List[dict]: A list of dictionaries containing paths to CT, PET, and label files for each element in split.
+
+    """
+    root = Path(root)
+    data = [
+        {
+            "ct": root / "imagesTr" / f"{element}_0000{suffix}",
+            "pet": root / "imagesTr" / f"{element}_0001{suffix}",
+            "label": root / "labelsTr" / f"{element}{suffix}",
+        }
+        for element in split
+    ]
+    return data
+
+
+def extract_paths_containing_tracer(file_dicts: List[dict], key: str = "label") -> np.ndarray:
+    # Small helper to extract the tracer from the file name
+    tracer_list = []
+    for file_dict in file_dicts:
+        path = file_dict[key]
+        if "fdg" in path.name.lower():
+            tracer_list.append("fdg")
+        else:
+            tracer_list.append("psma")
+    return np.array(tracer_list)
+
+
+def result_parser(net, datamodule, trainer):
+    """Save prediction scores to file.
+    Args:
+        net: LightningModule
+        datamodule: LightningDataModule
+        trainer: LightningTrainer
     Returns:
         None
 
     """
-    pred_array = prediction.detach().cpu().numpy() if isinstance(prediction, torch.Tensor) else prediction
-    label_array = label.detach().cpu().numpy() if isinstance(label, torch.Tensor) else label
+    # Save prediction scores to file
+    metrics_dice = net.test_aggregator.dice_scores
+    metrics_fp = net.test_aggregator.false_positives
+    metrics_fn = net.test_aggregator.false_negatives
+    results = []
 
-    fig, axes = plt.subplots(1, 3, figsize=(12, 6))
+    # Get the file names from the test dataset
+    # Change this lines if you don't have a monai dict dataset!
+    file_names = datamodule.test_dataset.data
 
-    # Plot the sum of the label image along the second dimension
-    axes[0].imshow(np.rot90(np.sum(pred_array.squeeze(), axis)), cmap="gray")
-    axes[0].set_title("Amax of Prediction")
+    # Add summary results
+    results.append({"Summary": net.test_aggregator.compute()})
 
-    # Plot the sum of the CT image along the second dimension
-    axes[1].imshow(np.rot90(np.sum(label_array.squeeze(), axis)), cmap="gray")
-    axes[1].set_title("Amax of GT")
+    # Add summary results for FDG and PSMA tracers
+    tracers = extract_paths_containing_tracer(file_names)
+    for tracer in ["fdg", "psma"]:
+        if np.any(tracers == tracer):
+            results.append(
+                {
+                    f"Summary {tracer.upper()}": {
+                        "false_positives": np.nanmean(np.array(metrics_fp)[tracers == tracer]),
+                        "false_negatives": np.nanmean(np.array(metrics_fn)[tracers == tracer]),
+                        "dice_score": np.nanmean(np.array(metrics_dice)[tracers == tracer]),
+                    }
+                }
+            )
+        else:
+            results.append({f"Summary {tracer.upper()}": None})
 
-    # Plot the sum of the CT image along the second dimension
-    axes[2].imshow(np.rot90(((label_array.squeeze() - pred_array.squeeze()) ** 2).mean(1)), cmap="Reds")
-    axes[2].set_title("Squared error")
-    plt.show()
+    # Add individual file results
+    for i, file_info in enumerate(file_names):
+        # change this line if you don't have a monai dict dataset!
+        file_info_str = {key: str(value) for key, value in file_info.items()}
+        result = {
+            "file_info": file_info_str,
+            "metrics": {
+                "false_positives": float(metrics_fp[i]),
+                "false_negatives": float(metrics_fn[i]),
+                "dice_score": float(metrics_dice[i]),
+            },
+        }
+        results.append(result)
 
-    if print_metrics:
-        test_aggregator = AutoPETMetricAggregator()
-        test_aggregator.update(pred_array, label_array)
-        print(test_aggregator.compute())
+    # Write results to JSON file
+    output_path = os.path.join(trainer.logger.log_dir, "results.json")
+    with open(output_path, "w") as json_file:
+        json.dump(results, json_file, sort_keys=False, indent=4)
+
+
+class SimpleParser:
+    def __init__(self, output_path: str):
+        self.output_path = output_path
+        self.dice_scores = []
+        self.false_positives = []
+        self.false_negatives = []
+        self.tracers = []
+        self.data = []
+
+    def write(self, file_info: dict, metrics: dict):
+        self.data.append({"file_info": {key: str(value) for key, value in file_info.items()}, "metrics": metrics})
+        self.dice_scores.append(metrics["dice_score"])
+        self.false_positives.append(metrics["fp_volume"])
+        self.false_negatives.append(metrics["fn_volume"])
+        self.tracers.append("fdg" if "fdg" in Path(file_info["label"]).name.lower() else "psma")
+
+        results = self.aggregate()
+        results.extend(self.data)
+
+        with open(self.output_path, "w") as json_file:
+            json.dump(results, json_file, sort_keys=False, indent=4)
+
+    def reset(self):
+        self.dice_scores = []
+        self.false_positives = []
+        self.false_negatives = []
+        self.tracers = []
+        self.data = []
+
+    def aggregate(self) -> List[dict]:
+        results = [
+            {
+                "Summary": {
+                    "dice_score": np.nanmean(np.array(self.dice_scores)),
+                    "fp_volume": np.nanmean(np.array(self.false_positives)),
+                    "fn_volume": np.nanmean(np.array(self.false_negatives)),
+                }
+            }
+        ]
+        tracers = np.array(self.tracers)
+        for tracer in ["fdg", "psma"]:
+            if np.any(tracers == tracer):
+                results.append(
+                    {
+                        f"Summary {tracer.upper()}": {
+                            "dice_score": np.nanmean(np.array(self.dice_scores)[tracers == tracer]),
+                            "fp_volume": np.nanmean(np.array(self.false_positives)[tracers == tracer]),
+                            "fn_volume": np.nanmean(np.array(self.false_negatives)[tracers == tracer]),
+                        }
+                    }
+                )
+            else:
+                results.append({f"Summary {tracer.upper()}": None})
+
+        return results
