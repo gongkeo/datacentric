@@ -173,9 +173,9 @@ def get_transforms(
             mt.RandSimulateLowResolutiond(keys=input_keys, zoom_range=(0.5, 1), prob=0.25),
             mt.RandAdjustContrastd(keys=input_keys, gamma=(0.7, 1.5), invert_image=True, retain_stats=True, prob=0.1),
             mt.RandAdjustContrastd(keys=input_keys, gamma=(0.7, 1.5), invert_image=False, retain_stats=True, prob=0.3),
-            mt.RandFlipd(keys=keys, spatial_axis=[0], prob=0.5),
-            mt.RandFlipd(keys=keys, spatial_axis=[1], prob=0.5),
-            mt.RandFlipd(keys=keys, spatial_axis=[2], prob=0.5),
+            # mt.RandFlipd(keys=keys, spatial_axis=[0], prob=0.5),
+            # mt.RandFlipd(keys=keys, spatial_axis=[1], prob=0.5),
+            # mt.RandFlipd(keys=keys, spatial_axis=[2], prob=0.5),
         ]
         all_transforms.extend(other_transforms)
 
